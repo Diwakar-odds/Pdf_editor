@@ -1,8 +1,29 @@
 {
   "name": "pdf-editor",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
+  "description": "A modern, browser-based PDF editor built with React, TypeScript, and Vite",
+  "author": "Your Name",
+  "license": "MIT",
   "type": "module",
+  "keywords": [
+    "pdf",
+    "editor",
+    "react",
+    "typescript",
+    "vite",
+    "pdf-editor",
+    "pdf-annotation",
+    "browser-based"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/pdf-editor.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/pdf-editor/issues"
+  },
+  "homepage": "https://github.com/yourusername/pdf-editor#readme",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
