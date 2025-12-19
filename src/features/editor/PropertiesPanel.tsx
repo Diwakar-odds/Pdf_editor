@@ -3,6 +3,7 @@ import { Type, Palette, Trash2, Copy, Layers, AlignLeft, AlignCenter, AlignRight
 import { Button } from '../../components/ui/Button';
 import { HexColorPicker } from 'react-colorful';
 import { useState } from 'react';
+import { smoothPath } from '../../lib/path-utils';
 
 export function PropertiesPanel() {
     const { selectedId, annotations, actions } = usePDFStore();
@@ -203,6 +204,22 @@ export function PropertiesPanel() {
                         <div className="text-xs text-slate-500 mt-1">
                             {selectedAnnotation.strokeWidth || selectedAnnotation.fontSize || 2}px
                         </div>
+                    </div>
+                )}
+
+                {/* Smoothing for drawings */}
+                {isDraw && selectedAnnotation.points && (
+                    <div>
+                        <label className="text-xs font-medium text-slate-600 mb-2 block">Path Smoothing</label>
+                        <button
+                            onClick={() => {
+                                const smoothed = smoothPath(selectedAnnotation.points!, 0.3);
+                                actions.updateAnnotation(selectedId!, { points: smoothed });
+                            }}
+                            className="w-full px-3 py-2 text-sm bg-primary-50 hover:bg-primary-100 text-primary-700 rounded border border-primary-200 transition-colors"
+                        >
+                            Apply Smoothing
+                        </button>
                     </div>
                 )}
 
