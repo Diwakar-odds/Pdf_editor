@@ -16,6 +16,8 @@ import { usePDFStore } from '../store/usePDFStore';
 export default function HomePage() {
     const navigate = useNavigate();
     const [isDragging, setIsDragging] = useState(false);
+    const [showLogin, setShowLogin] = useState(false);
+    const [showSignup, setShowSignup] = useState(false);
     const { actions } = usePDFStore();
 
     const handleDragOver = (e: React.DragEvent) => {
@@ -67,8 +69,8 @@ export default function HomePage() {
                     <a href="#docs" className="hover:text-primary-600 transition-colors">Docs</a>
                 </div>
                 <div className="flex items-center gap-4">
-                    <Button variant="ghost" size="sm" className="hidden sm:flex">Log in</Button>
-                    <Button size="sm">Sign up</Button>
+                    <Button variant="ghost" size="sm" className="hidden sm:flex" onClick={() => setShowLogin(true)}>Log in</Button>
+                    <Button size="sm" onClick={() => setShowSignup(true)}>Sign up</Button>
                 </div>
             </nav>
 
@@ -95,7 +97,7 @@ export default function HomePage() {
                     onDragOver={handleDragOver}
                     onDragLeave={handleDragLeave}
                     onDrop={handleDrop}
-                    onClick={() => navigate('/editor/new')}
+                    onClick={() => document.getElementById('file-upload')?.click()}
                 >
                     <div className="w-16 h-16 bg-primary-100 text-primary-600 rounded-2xl flex items-center justify-center mb-6">
                         <UploadCloud className="w-8 h-8" />
@@ -109,8 +111,9 @@ export default function HomePage() {
                             className="hidden"
                             accept=".pdf"
                             onChange={handleFileSelect}
+                            aria-label="Upload PDF file"
                         />
-                        <Button onClick={() => document.getElementById('file-upload')?.click()}>Select File</Button>
+                        <Button onClick={(e: React.MouseEvent) => { e.stopPropagation(); document.getElementById('file-upload')?.click(); }}>Select File</Button>
                         <Button variant="secondary" onClick={(e: React.MouseEvent) => { e.stopPropagation(); navigate('/editor/sample'); }}>Try Sample Doc</Button>
                     </div>
                     <div className="mt-8 flex items-center gap-6 text-sm text-slate-400 font-medium">
@@ -177,6 +180,56 @@ export default function HomePage() {
             <footer className="py-12 bg-slate-50 border-t border-slate-200 text-center text-slate-500 text-sm">
                 <p>&copy; 2024 PDFPro Inc. All rights reserved.</p>
             </footer>
+
+            {/* Login Modal */}
+            {showLogin && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowLogin(false)}>
+                    <div className="bg-white rounded-2xl p-8 w-full max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
+                        <h2 className="text-2xl font-bold mb-6">Log in to PDFPro</h2>
+                        <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); alert('Login functionality coming soon!'); setShowLogin(false); }}>
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-2">Email</label>
+                                <input type="email" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="your@email.com" required />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-2">Password</label>
+                                <input type="password" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="••••••••" required />
+                            </div>
+                            <Button type="submit" className="w-full">Log in</Button>
+                        </form>
+                        <p className="mt-4 text-center text-sm text-slate-600">
+                            Don't have an account? <button onClick={() => { setShowLogin(false); setShowSignup(true); }} className="text-primary-600 font-medium hover:underline">Sign up</button>
+                        </p>
+                    </div>
+                </div>
+            )}
+
+            {/* Signup Modal */}
+            {showSignup && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowSignup(false)}>
+                    <div className="bg-white rounded-2xl p-8 w-full max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
+                        <h2 className="text-2xl font-bold mb-6">Sign up for PDFPro</h2>
+                        <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); alert('Signup functionality coming soon!'); setShowSignup(false); }}>
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-2">Name</label>
+                                <input type="text" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="John Doe" required />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-2">Email</label>
+                                <input type="email" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="your@email.com" required />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-2">Password</label>
+                                <input type="password" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="••••••••" required />
+                            </div>
+                            <Button type="submit" className="w-full">Sign up</Button>
+                        </form>
+                        <p className="mt-4 text-center text-sm text-slate-600">
+                            Already have an account? <button onClick={() => { setShowSignup(false); setShowLogin(true); }} className="text-primary-600 font-medium hover:underline">Log in</button>
+                        </p>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

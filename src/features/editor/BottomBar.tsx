@@ -53,11 +53,30 @@ export function BottomBar() {
             </div>
 
             <div className="flex items-center gap-2 justify-end w-1/3">
-                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => actions.setScale(scale - 0.1)}>
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => actions.fitToPage()}
+                    className="h-7 px-2 text-xs"
+                    title="Fit to Page"
+                >
+                    Fit Page
+                </Button>
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => actions.fitToWidth()}
+                    className="h-7 px-2 text-xs"
+                    title="Fit to Width"
+                >
+                    Fit Width
+                </Button>
+                <div className="w-px h-6 bg-slate-200 mx-1" />
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => actions.setScale(Math.max(0.5, scale - 0.1))}>
                     <Minus className="w-3 h-3" />
                 </Button>
                 <span className="text-xs font-medium w-10 text-center">{Math.round(scale * 100)}%</span>
-                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => actions.setScale(scale + 0.1)}>
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => actions.setScale(Math.min(3, scale + 0.1))}>
                     <Plus className="w-3 h-3" />
                 </Button>
             </div>

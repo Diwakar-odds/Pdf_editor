@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 export interface Annotation {
     id: string;
-    type: 'text' | 'image' | 'draw' | 'highlight';
+    type: 'text' | 'image' | 'draw' | 'highlight' | 'shape' | 'comment';
     x: number;
     y: number;
     page: number;
@@ -15,6 +15,33 @@ export interface Annotation {
     opacity?: number;
     points?: number[]; // For drawing
     image?: string; // Data URL for image
+    rotation?: number; // Rotation in degrees
+
+    // Shape-specific
+    shapeType?: 'rectangle' | 'circle' | 'arrow' | 'line';
+    strokeWidth?: number;
+    fillColor?: string;
+    endX?: number;
+    endY?: number;
+
+    // Text formatting
+    fontFamily?: string;
+    textAlign?: 'left' | 'center' | 'right';
+    fontWeight?: 'normal' | 'bold';
+    fontStyle?: 'normal' | 'italic';
+    textDecoration?: 'none' | 'underline';
+
+    // Comments
+    author?: string;
+    timestamp?: number;
+    replies?: CommentReply[];
+}
+
+export interface CommentReply {
+    id: string;
+    author: string;
+    content: string;
+    timestamp: number;
 }
 
 interface PDFState {
@@ -26,6 +53,11 @@ interface PDFState {
     annotations: Annotation[];
     activeTool: string;
     selectedId: string | null;
+
+    // History for undo/redo
+    history: Annotation[][];
+    historyIndex: number;
+    clipboard: Annotation | null;
 
     actions: {
         setFile: (file: File) => void;
@@ -42,12 +74,29 @@ interface PDFState {
         addAnnotation: (annotation: Omit<Annotation, 'id'>) => void;
         updateAnnotation: (id: string, updates: Partial<Annotation>) => void;
         removeAnnotation: (id: string) => void;
+
+        // History actions
+        undo: () => void;
+        redo: () => void;
+        pushHistory: () => void;
+
+        // Annotation management
+        copyAnnotation: (id: string) => void;
+        pasteAnnotation: () => void;
+        duplicateAnnotation: (id: string) => void;
+        bringToFront: (id: string) => void;
+        sendToBack: (id: string) => void;
+
+        // Zoom helpers
+        fitToWidth: () => void;
+        fitToPage: () => void;
+
         reset: () => void;
         loadSample: () => Promise<void>;
     };
 }
 
-export const usePDFStore = create<PDFState>((set) => ({
+export const usePDFStore = create<PDFState>((set, get) => ({
     file: null,
     numPages: 0,
     currentPage: 1,
@@ -56,9 +105,20 @@ export const usePDFStore = create<PDFState>((set) => ({
     annotations: [],
     activeTool: 'select',
     selectedId: null,
+    history: [[]],
+    historyIndex: 0,
+    clipboard: null,
 
     actions: {
-        setFile: (file) => set({ file, currentPage: 1, numPages: 0, annotations: [], selectedId: null }),
+        setFile: (file) => set({
+            file,
+            currentPage: 1,
+            numPages: 0,
+            annotations: [],
+            selectedId: null,
+            history: [[]],
+            historyIndex: 0
+        }),
         setNumPages: (numPages) => set({ numPages }),
         setCurrentPage: (currentPage) => set({ currentPage, selectedId: null }),
         nextPage: () => set((state) => ({ currentPage: Math.min(state.currentPage + 1, state.numPages), selectedId: null })),
@@ -79,15 +139,132 @@ export const usePDFStore = create<PDFState>((set) => ({
             return {};
         }),
 
-        addAnnotation: (annotation) => set((state) => ({
-            annotations: [...state.annotations, { ...annotation, id: uuidv4() }]
-        })),
-        updateAnnotation: (id, updates) => set((state) => ({
-            annotations: state.annotations.map(a => a.id === id ? { ...a, ...updates } : a)
-        })),
-        removeAnnotation: (id) => set((state) => ({
-            annotations: state.annotations.filter(a => a.id !== id)
-        })),
+        addAnnotation: (annotation) => {
+            const state = get();
+            const newAnnotations = [...state.annotations, { ...annotation, id: uuidv4() }];
+            set({ annotations: newAnnotations });
+            get().actions.pushHistory();
+        },
+        updateAnnotation: (id, updates) => {
+            const state = get();
+            const newAnnotations = state.annotations.map(a => a.id === id ? { ...a, ...updates } : a);
+            set({ annotations: newAnnotations });
+            get().actions.pushHistory();
+        },
+        removeAnnotation: (id) => {
+            const state = get();
+            const newAnnotations = state.annotations.filter(a => a.id !== id);
+            set({ annotations: newAnnotations, selectedId: null });
+            get().actions.pushHistory();
+        },
+
+        // History management
+        pushHistory: () => {
+            const state = get();
+            const newHistory = state.history.slice(0, state.historyIndex + 1);
+            newHistory.push(JSON.parse(JSON.stringify(state.annotations)));
+
+            // Limit history to 50 steps
+            if (newHistory.length > 50) {
+                newHistory.shift();
+            } else {
+                set({ historyIndex: state.historyIndex + 1 });
+            }
+
+            set({ history: newHistory });
+        },
+
+        undo: () => {
+            const state = get();
+            if (state.historyIndex > 0) {
+                const newIndex = state.historyIndex - 1;
+                set({
+                    annotations: JSON.parse(JSON.stringify(state.history[newIndex])),
+                    historyIndex: newIndex,
+                    selectedId: null
+                });
+            }
+        },
+
+        redo: () => {
+            const state = get();
+            if (state.historyIndex < state.history.length - 1) {
+                const newIndex = state.historyIndex + 1;
+                set({
+                    annotations: JSON.parse(JSON.stringify(state.history[newIndex])),
+                    historyIndex: newIndex,
+                    selectedId: null
+                });
+            }
+        },
+
+        // Annotation management
+        copyAnnotation: (id) => {
+            const state = get();
+            const annotation = state.annotations.find(a => a.id === id);
+            if (annotation) {
+                set({ clipboard: JSON.parse(JSON.stringify(annotation)) });
+            }
+        },
+
+        pasteAnnotation: () => {
+            const state = get();
+            if (state.clipboard) {
+                const newAnnotation = {
+                    ...state.clipboard,
+                    id: uuidv4(),
+                    x: state.clipboard.x + 20,
+                    y: state.clipboard.y + 20,
+                };
+                set({ annotations: [...state.annotations, newAnnotation] });
+                get().actions.pushHistory();
+            }
+        },
+
+        duplicateAnnotation: (id) => {
+            const state = get();
+            const annotation = state.annotations.find(a => a.id === id);
+            if (annotation) {
+                const newAnnotation = {
+                    ...annotation,
+                    id: uuidv4(),
+                    x: annotation.x + 20,
+                    y: annotation.y + 20,
+                };
+                set({ annotations: [...state.annotations, newAnnotation] });
+                get().actions.pushHistory();
+            }
+        },
+
+        bringToFront: (id) => {
+            const state = get();
+            const annotation = state.annotations.find(a => a.id === id);
+            if (annotation) {
+                const filtered = state.annotations.filter(a => a.id !== id);
+                set({ annotations: [...filtered, annotation] });
+                get().actions.pushHistory();
+            }
+        },
+
+        sendToBack: (id) => {
+            const state = get();
+            const annotation = state.annotations.find(a => a.id === id);
+            if (annotation) {
+                const filtered = state.annotations.filter(a => a.id !== id);
+                set({ annotations: [annotation, ...filtered] });
+                get().actions.pushHistory();
+            }
+        },
+
+        // Zoom helpers
+        fitToWidth: () => {
+            // Will be calculated based on container width
+            set({ scale: 1.2 });
+        },
+
+        fitToPage: () => {
+            set({ scale: 1 });
+        },
         reset: () => set({
             file: null,
             numPages: 0,

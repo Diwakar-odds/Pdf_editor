@@ -1,9 +1,9 @@
 import React, { useRef } from 'react';
-import { MousePointer2, Type, Image as ImageIcon, PenTool, Highlighter, MessageSquare, FileText, ScanText, Shield, Crop } from 'lucide-react';
+import { MousePointer2, Type, Image as ImageIcon, PenTool, Highlighter, MessageSquare, Square, Circle, ArrowRight, Minus, Eraser } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { usePDFStore } from '../../store/usePDFStore';
 
-export type ToolType = 'select' | 'text' | 'image' | 'draw' | 'highlight' | 'comment' | 'form' | 'ocr' | 'protect' | 'crop';
+export type ToolType = 'select' | 'text' | 'image' | 'draw' | 'eraser' | 'highlight' | 'rectangle' | 'circle' | 'arrow' | 'line' | 'comment' | 'form' | 'ocr' | 'protect' | 'crop';
 
 interface ToolsSidebarProps {
     activeTool: ToolType;
@@ -19,12 +19,13 @@ export function ToolsSidebar({ activeTool, onSelectTool }: ToolsSidebarProps) {
         { id: 'text', icon: Type, label: 'Text' },
         { id: 'image', icon: ImageIcon, label: 'Image', onClick: () => fileInputRef.current?.click() },
         { id: 'draw', icon: PenTool, label: 'Draw' },
+        { id: 'eraser', icon: Eraser, label: 'Eraser' },
         { id: 'highlight', icon: Highlighter, label: 'Highlight' },
+        { id: 'rectangle', icon: Square, label: 'Rectangle' },
+        { id: 'circle', icon: Circle, label: 'Circle' },
+        { id: 'arrow', icon: ArrowRight, label: 'Arrow' },
+        { id: 'line', icon: Minus, label: 'Line' },
         { id: 'comment', icon: MessageSquare, label: 'Comment' },
-        { id: 'form', icon: FileText, label: 'Form' },
-        { id: 'ocr', icon: ScanText, label: 'OCR' },
-        { id: 'protect', icon: Shield, label: 'Protect' },
-        { id: 'crop', icon: Crop, label: 'Crop' },
     ] as const;
 
     const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -58,6 +59,7 @@ export function ToolsSidebar({ activeTool, onSelectTool }: ToolsSidebarProps) {
                 className="hidden"
                 accept="image/*"
                 onChange={handleImageUpload}
+                aria-label="Upload image to PDF"
             />
             {tools.map((tool) => {
                 const IconComponent = tool.icon;

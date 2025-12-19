@@ -4,6 +4,37 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  /* Light mode colors */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-surface: #f1f5f9;
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --text-tertiary: #94a3b8;
+  --border-color: #e2e8f0;
+  --border-hover: #cbd5e1;
+}
+
+.dark {
+  /* Dark mode colors */
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-surface: #334155;
+  --text-primary: #f1f5f9;
+  --text-secondary: #cbd5e1;
+  --text-tertiary: #94a3b8;
+  --border-color: #334155;
+  --border-hover: #475569;
+}
+
+/* Apply theme colors */
+body {
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
 @layer base {
   body {
     @apply font-sans antialiased text-slate-900 bg-background selection:bg-primary-100 selection:text-primary-900;
