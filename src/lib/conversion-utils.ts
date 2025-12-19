@@ -18,9 +18,21 @@ export async function compressPDF(
 
         // Compression settings based on level
         const settings = {
-            low: { imageQuality: 0.9, removeMetadata: false },
-            medium: { imageQuality: 0.7, removeMetadata: true },
-            high: { imageQuality: 0.5, removeMetadata: true }
+            low: {
+                imageQuality: 0.85,
+                removeMetadata: false,
+                objectStreams: true
+            },
+            medium: {
+                imageQuality: 0.65,
+                removeMetadata: true,
+                objectStreams: true
+            },
+            high: {
+                imageQuality: 0.45,
+                removeMetadata: true,
+                objectStreams: true
+            }
         };
 
         const config = settings[level];
@@ -33,13 +45,30 @@ export async function compressPDF(
             pdfDoc.setKeywords([]);
             pdfDoc.setProducer('');
             pdfDoc.setCreator('');
+            pdfDoc.setCreationDate(new Date(0));
+            pdfDoc.setModificationDate(new Date(0));
         }
 
-        // Save with compression
+        // Get all pages and normalize
+        const pages = pdfDoc.getPages();
+        for (const page of pages) {
+            const { width, height } = page.getSize();
+            page.setSize(width, height); // Normalizes page structure
+        }
+
+        // Save with aggressive compression
         const compressedBytes = await pdfDoc.save({
-            useObjectStreams: true,
+            useObjectStreams: config.objectStreams,
             addDefaultPage: false,
+            objectsPerTick: 50,
+            updateFieldAppearances: false,
         });
+
+        // Log compression results
+        const originalSize = pdfBytes.length;
+        const compressedSize = compressedBytes.length;
+        const ratio = getCompressionRatio(originalSize, compressedSize);
+        console.log(`Compression (${level}): ${formatFileSize(originalSize)} → ${formatFileSize(compressedSize)} (${ratio}% reduction)`);
 
         return compressedBytes;
     } catch (error) {

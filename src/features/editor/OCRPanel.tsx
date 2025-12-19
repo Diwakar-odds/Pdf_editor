@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FileText, Download, Loader2 } from 'lucide-react';
+import { FileText, Download, Loader2, Copy, Check } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { usePDFStore } from '../../store/usePDFStore';
 
@@ -7,6 +7,7 @@ export function OCRPanel() {
     const { file, currentPage } = usePDFStore();
     const [extractedText, setExtractedText] = useState('');
     const [isExtracting, setIsExtracting] = useState(false);
+    const [isCopied, setIsCopied] = useState(false);
 
     const handleExtractText = async () => {
         if (!file) return;
@@ -72,6 +73,17 @@ export function OCRPanel() {
         URL.revokeObjectURL(url);
     };
 
+    const handleCopyText = async () => {
+        try {
+            await navigator.clipboard.writeText(extractedText);
+            setIsCopied(true);
+            setTimeout(() => setIsCopied(false), 2000);
+        } catch (error) {
+            console.error('Copy failed:', error);
+            alert('Failed to copy text to clipboard.');
+        }
+    };
+
     return (
         <div className="p-4 space-y-4">
             <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300">
@@ -115,14 +127,35 @@ export function OCRPanel() {
                         <span className="text-xs text-slate-600 dark:text-slate-400">
                             Extracted Text
                         </span>
-                        <Button
-                            onClick={handleDownloadText}
-                            variant="ghost"
-                            size="sm"
-                        >
-                            <Download className="w-3 h-3 mr-1" />
-                            Download
-                        </Button>
+                        <div className="flex gap-1">
+                            <Button
+                                onClick={handleCopyText}
+                                variant="ghost"
+                                size="sm"
+                                className="h-7"
+                            >
+                                {isCopied ? (
+                                    <>
+                                        <Check className="w-3 h-3 mr-1 text-green-600" />
+                                        Copied
+                                    </>
+                                ) : (
+                                    <>
+                                        <Copy className="w-3 h-3 mr-1" />
+                                        Copy
+                                    </>
+                                )}
+                            </Button>
+                            <Button
+                                onClick={handleDownloadText}
+                                variant="ghost"
+                                size="sm"
+                                className="h-7"
+                            >
+                                <Download className="w-3 h-3 mr-1" />
+                                Download
+                            </Button>
+                        </div>
                     </div>
 
                     <textarea

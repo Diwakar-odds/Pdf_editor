@@ -4,6 +4,7 @@ export default {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
+  darkMode: 'class', // Enable dark mode with class strategy
   theme: {
     extend: {
       colors: {
@@ -21,12 +22,12 @@ export default {
           950: '#172554',
         },
         background: {
-            DEFAULT: '#ffffff',
-            dark: '#0f172a',
+          DEFAULT: '#ffffff',
+          dark: '#0f172a',
         },
         surface: {
-            DEFAULT: '#f8fafc',
-            dark: '#1e293b',
+          DEFAULT: '#f8fafc',
+          dark: '#1e293b',
         }
       },
       fontFamily: {
@@ -42,8 +43,8 @@ export default {
           '100%': { opacity: '1' },
         },
         slideUp: {
-            '0%': { transform: 'translateY(10px)', opacity: '0' },
-            '100%': { transform: 'translateY(0)', opacity: '1' },
+          '0%': { transform: 'translateY(10px)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1' },
         }
       }
     },

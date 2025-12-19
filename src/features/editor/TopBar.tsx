@@ -18,7 +18,7 @@ import { useTextSearch } from '../../hooks/useTextSearch';
 import { useTheme } from '../../context/ThemeContext';
 import { usePDFStore } from '../../store/usePDFStore';
 import { exportPDF, downloadFile } from '../../lib/pdf-utils';
-import { compressPDF, convertPDFToImages, type CompressionLevel } from '../../lib/conversion-utils';
+import { compressPDF, convertPDFToImages, formatFileSize, getCompressionRatio, type CompressionLevel } from '../../lib/conversion-utils';
 
 interface TopBarProps {
     fileName: string;
@@ -33,6 +33,7 @@ export function TopBar({ fileName }: TopBarProps) {
     const [showExportMenu, setShowExportMenu] = useState(false);
     const [compressionLevel, setCompressionLevel] = useState<CompressionLevel>('medium');
     const [isExporting, setIsExporting] = useState(false);
+    const [compressionInfo, setCompressionInfo] = useState<string>('');
 
     const canUndo = historyIndex > 0;
     const canRedo = historyIndex < history.length - 1;
@@ -127,7 +128,7 @@ export function TopBar({ fileName }: TopBarProps) {
     };
 
     return (
-        <header className="h-14 border-b border-slate-200 bg-white flex items-center justify-between px-4 z-20 shrink-0">
+        <header className="h-14 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 flex items-center justify-between px-4 z-20 shrink-0 transition-colors duration-300">
             <div className="flex items-center gap-4 w-1/3">
                 <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
                     <ArrowLeft className="w-5 h-5 text-slate-500" />

@@ -39,11 +39,8 @@ export function Canvas() {
                 color: '#000000',
                 fontSize: 2 // Stroke width
             });
-        } else if (activeTool === 'highlight') {
-            // Start highlight selection
-            setShapeStart({ x: targetX, y: targetY });
-        } else if (['rectangle', 'circle', 'arrow', 'line'].includes(activeTool)) {
-            // Start shape drawing
+        } else if (activeTool === 'highlight' || activeTool === 'rectangle' || activeTool === 'circle' || activeTool === 'arrow' || activeTool === 'line') {
+            // Start shape/highlight selection
             setShapeStart({ x: targetX, y: targetY });
         }
     };
@@ -57,7 +54,7 @@ export function Canvas() {
             actions.appendPathPoint(targetX, targetY);
         } else if (activeTool === 'eraser' && e.buttons === 1) {
             // Erase: find and remove drawing annotations near cursor
-            const eraseRadius = 10;
+            const eraseRadius = 20; // Increased radius for better erasing
             const drawingsToRemove = annotations.filter(a => {
                 if (a.type !== 'draw' || a.page !== currentPage || !a.points) return false;
 
@@ -161,7 +158,7 @@ export function Canvas() {
         switch (activeTool) {
             case 'text': return 'cursor-text';
             case 'draw': return 'cursor-crosshair';
-            case 'eraser': return 'cursor-not-allowed';
+            case 'eraser': return 'cursor-crosshair'; // Changed from cursor-not-allowed
             case 'highlight':
             case 'rectangle':
             case 'circle':
@@ -173,9 +170,9 @@ export function Canvas() {
     };
 
     return (
-        <main className="flex-1 bg-slate-100 relative overflow-hidden flex flex-col transition-color duration-300">
+        <main className="flex-1 bg-slate-100 dark:bg-slate-900 relative overflow-hidden flex flex-col transition-colors duration-300">
             <div className="flex-1 overflow-auto flex items-start justify-center p-8 custom-scrollbar">
-                <div className="relative group bg-white shadow-2xl transition-transform duration-200 ease-out origin-top min-h-[842px]">
+                <div className="relative group bg-white dark:bg-slate-800 shadow-2xl transition-transform duration-200 ease-out origin-top min-h-[842px]">
                     {!file ? (
                         <div className="flex items-center justify-center w-[595px] h-[842px] text-slate-400">
                             No PDF loaded

@@ -14,7 +14,7 @@ export function BottomBar() {
     };
 
     return (
-        <footer className="h-10 border-t border-slate-200 bg-white px-4 flex items-center justify-between z-10 shrink-0">
+        <footer className="h-10 border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 flex items-center justify-between z-10 shrink-0 transition-colors duration-300">
             <div className="flex items-center gap-2 w-1/3">
                 {/* Status Stub */}
                 <span className="text-xs text-slate-400">Ready</span>

@@ -54,7 +54,7 @@ export function ToolsSidebar({ activeTool, onSelectTool }: ToolsSidebarProps) {
     };
 
     return (
-        <aside className="w-16 border-r border-slate-200 bg-white flex flex-col items-center py-4 gap-4 z-20 shrink-0">
+        <aside className="w-16 border-r border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 flex flex-col items-center py-4 z-20 shrink-0 overflow-y-auto">
             <input
                 type="file"
                 ref={fileInputRef}
@@ -63,31 +63,33 @@ export function ToolsSidebar({ activeTool, onSelectTool }: ToolsSidebarProps) {
                 onChange={handleImageUpload}
                 aria-label="Upload image to PDF"
             />
-            {tools.map((tool) => {
-                const IconComponent = tool.icon;
-                return (
-                    <button
-                        key={tool.id}
-                        onClick={() => 'onClick' in tool ? tool.onClick() : onSelectTool(tool.id as ToolType)}
-                        className={cn(
-                            "p-2.5 rounded-xl transition-all duration-200 group relative",
-                            activeTool === tool.id
-                                ? "bg-primary-50 text-primary-600 shadow-sm"
-                                : "text-slate-400 hover:text-slate-600 hover:bg-slate-50"
-                        )}
-                        title={tool.label}
-                    >
-                        <IconComponent className="w-5 h-5" />
+            <div className="flex flex-col items-center gap-4 w-full">
+                {tools.map((tool) => {
+                    const IconComponent = tool.icon;
+                    return (
+                        <button
+                            key={tool.id}
+                            onClick={() => 'onClick' in tool ? tool.onClick() : onSelectTool(tool.id as ToolType)}
+                            className={cn(
+                                "p-2.5 rounded-xl transition-all duration-200 group relative",
+                                activeTool === tool.id
+                                    ? "bg-primary-50 text-primary-600 shadow-sm dark:bg-primary-900 dark:text-primary-400"
+                                    : "text-slate-400 hover:text-slate-600 hover:bg-slate-50 dark:hover:text-slate-300 dark:hover:bg-slate-800"
+                            )}
+                            title={tool.label}
+                        >
+                            <IconComponent className="w-5 h-5" />
 
-                        {/* Tooltip */}
-                        <div className="absolute left-full ml-4 top-1/2 -translate-y-1/2 px-2 py-1 bg-slate-800 text-white text-xs rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50">
-                            {tool.label}
-                            {/* Arrow */}
-                            <div className="absolute top-1/2 -left-1 -translate-y-1/2 border-4 border-transparent border-r-slate-800" />
-                        </div>
-                    </button>
-                );
-            })}
+                            {/* Tooltip */}
+                            <div className="absolute left-full ml-4 top-1/2 -translate-y-1/2 px-2 py-1 bg-slate-800 text-white text-xs rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50">
+                                {tool.label}
+                                {/* Arrow */}
+                                <div className="absolute top-1/2 -left-1 -translate-y-1/2 border-4 border-transparent border-r-slate-800" />
+                            </div>
+                        </button>
+                    );
+                })}
+            </div>
         </aside>
     );
 }
