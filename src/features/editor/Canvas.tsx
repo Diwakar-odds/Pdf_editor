@@ -99,31 +99,34 @@ export function Canvas() {
             } else if (['rectangle', 'circle'].includes(activeTool)) {
                 actions.addAnnotation({
                     type: 'shape',
-                    shapeType: activeTool as 'rectangle' | 'circle',
                     page: currentPage,
+                    shapeType: activeTool as 'rectangle' | 'circle',
                     x,
                     y,
                     width: Math.max(width, 20),
                     height: Math.max(height, 20),
-                    color: '#000000',
-                    strokeWidth: 2
+                    strokeColor: '#000000',
+                    strokeWidth: 2,
+                    fillColor: 'none'
                 });
+                actions.setActiveTool('select');
             } else if (['arrow', 'line'].includes(activeTool)) {
                 actions.addAnnotation({
                     type: 'shape',
-                    shapeType: activeTool as 'arrow' | 'line',
                     page: currentPage,
+                    shapeType: activeTool as 'arrow' | 'line',
                     x: shapeStart.x,
                     y: shapeStart.y,
-                    endX: targetX,
-                    endY: targetY,
-                    color: '#000000',
-                    strokeWidth: 2
+                    width: targetX - shapeStart.x,
+                    height: targetY - shapeStart.y,
+                    strokeColor: '#000000',
+                    strokeWidth: 2,
+                    fillColor: 'none'
                 });
+                actions.setActiveTool('select');
             }
 
             setShapeStart(null);
-            actions.setActiveTool('select');
         }
     };
 

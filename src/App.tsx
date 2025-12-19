@@ -1,16 +1,16 @@
 
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import HomePage from './pages/Home';
 import EditorPage from './pages/Editor';
+import { ImageToPDFConverter } from './features/converter/ImageToPDFConverter';
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/editor/:id" element={<EditorPage />} />
-      </Routes>
-    </BrowserRouter>
+    <Routes>
+      <Route path="/" element={<HomePage />} />
+      <Route path="/editor/:id" element={<EditorPage />} />
+      <Route path="/convert" element={<ImageToPDFConverter />} />
+    </Routes>
   );
 }
 

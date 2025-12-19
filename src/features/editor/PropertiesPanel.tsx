@@ -4,20 +4,51 @@ import { Button } from '../../components/ui/Button';
 import { HexColorPicker } from 'react-colorful';
 import { useState } from 'react';
 import { smoothPath } from '../../lib/path-utils';
+import { OCRPanel } from './OCRPanel';
+import { ProtectPanel } from './ProtectPanel';
 
 export function PropertiesPanel() {
     const { selectedId, annotations, actions } = usePDFStore();
+    const activeTool = usePDFStore(state => state.activeTool);
     const [showColorPicker, setShowColorPicker] = useState(false);
     const [showFillColorPicker, setShowFillColorPicker] = useState(false);
 
     const selectedAnnotation = annotations.find(a => a.id === selectedId);
 
-    if (!selectedAnnotation) {
+    // Show OCR panel when OCR tool is active
+    if (activeTool === 'ocr') {
+        return (
+            <aside className="w-80 border-l border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 overflow-y-auto shrink-0">
+                <OCRPanel />
+            </aside>
+        );
+    }
+
+    // Show Protect panel when Protect tool is active
+    if (activeTool === 'protect') {
+        return (
+            <aside className="w-80 border-l border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 overflow-y-auto shrink-0">
+                <ProtectPanel />
+            </aside>
+        );
+    }
+
+    if (!selectedId) {
         return (
             <aside className="w-64 bg-white border-l border-slate-200 p-4 shrink-0">
                 <div className="text-center text-slate-400 mt-8">
                     <Palette className="w-12 h-12 mx-auto mb-2 opacity-50" />
                     <p className="text-sm">Select an annotation to edit properties</p>
+                </div>
+            </aside>
+        );
+    }
+
+    if (!selectedAnnotation) {
+        return (
+            <aside className="w-64 bg-white border-l border-slate-200 p-4 shrink-0">
+                <div className="text-center text-slate-400 mt-8">
+                    <p className="text-sm">Annotation not found</p>
                 </div>
             </aside>
         );

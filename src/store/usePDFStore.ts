@@ -20,6 +20,7 @@ export interface Annotation {
     // Shape-specific
     shapeType?: 'rectangle' | 'circle' | 'arrow' | 'line';
     strokeWidth?: number;
+    strokeColor?: string;
     fillColor?: string;
     endX?: number;
     endY?: number;

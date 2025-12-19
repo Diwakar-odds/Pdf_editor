@@ -18,6 +18,7 @@ import { useTextSearch } from '../../hooks/useTextSearch';
 import { useTheme } from '../../context/ThemeContext';
 import { usePDFStore } from '../../store/usePDFStore';
 import { exportPDF, downloadFile } from '../../lib/pdf-utils';
+import { compressPDF, convertPDFToImages, type CompressionLevel } from '../../lib/conversion-utils';
 
 interface TopBarProps {
     fileName: string;
@@ -29,6 +30,9 @@ export function TopBar({ fileName }: TopBarProps) {
     const { search, results, currentIndex, currentResult, next, prev, hasResults, isSearching } = useTextSearch();
     const { theme, toggleTheme } = useTheme();
     const [searchQuery, setSearchQuery] = useState('');
+    const [showExportMenu, setShowExportMenu] = useState(false);
+    const [compressionLevel, setCompressionLevel] = useState<CompressionLevel>('medium');
+    const [isExporting, setIsExporting] = useState(false);
 
     const canUndo = historyIndex > 0;
     const canRedo = historyIndex < history.length - 1;
@@ -53,12 +57,46 @@ export function TopBar({ fileName }: TopBarProps) {
 
     const handleExport = async () => {
         if (!file) return;
+        setIsExporting(true);
         try {
-            const pdfBytes = await exportPDF(file, annotations);
+            let pdfBytes = await exportPDF(file, annotations);
+
+            // Apply compression if not 'none'
+            if (compressionLevel !== 'none') {
+                pdfBytes = await compressPDF(pdfBytes, compressionLevel);
+            }
+
             downloadFile(pdfBytes, `edited_${fileName}`);
+            setShowExportMenu(false);
         } catch (e) {
             console.error('Export failed', e);
             alert('Export failed. Check console.');
+        } finally {
+            setIsExporting(false);
+        }
+    };
+
+    const handleExportAsImages = async (format: 'png' | 'jpg') => {
+        if (!file) return;
+        setIsExporting(true);
+        try {
+            const images = await convertPDFToImages(file, format, 0.92);
+
+            images.forEach((blob, index) => {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${fileName.replace('.pdf', '')}_page_${index + 1}.${format}`;
+                a.click();
+                URL.revokeObjectURL(url);
+            });
+
+            setShowExportMenu(false);
+        } catch (e) {
+            console.error('Image export failed', e);
+            alert('Image export failed. Check console.');
+        } finally {
+            setIsExporting(false);
         }
     };
 
@@ -182,10 +220,70 @@ export function TopBar({ fileName }: TopBarProps) {
                 <Button variant="ghost" size="icon" className="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200" onClick={handleShare}>
                     <Share2 className="w-5 h-5" />
                 </Button>
-                <Button onClick={handleExport} className="gap-2">
-                    <Download className="w-4 h-4" />
-                    Export
-                </Button>
+
+                <div className="relative">
+                    <Button
+                        onClick={() => setShowExportMenu(!showExportMenu)}
+                        className="gap-2"
+                        disabled={isExporting}
+                    >
+                        <Download className="w-4 h-4" />
+                        {isExporting ? 'Exporting...' : 'Export'}
+                    </Button>
+
+                    {showExportMenu && (
+                        <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-slate-200 dark:border-slate-700 z-50">
+                            <div className="p-3 border-b border-slate-200 dark:border-slate-700">
+                                <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Export Options</h4>
+
+                                <label className="text-xs text-slate-600 dark:text-slate-400 mb-1 block">Compression</label>
+                                <select
+                                    value={compressionLevel}
+                                    onChange={(e) => setCompressionLevel(e.target.value as CompressionLevel)}
+                                    className="w-full px-2 py-1 text-sm border border-slate-200 dark:border-slate-600 rounded bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200"
+                                >
+                                    <option value="none">None (Original Size)</option>
+                                    <option value="low">Low (90% Quality)</option>
+                                    <option value="medium">Medium (70% Quality)</option>
+                                    <option value="high">High (50% Quality)</option>
+                                </select>
+                            </div>
+
+                            <div className="p-2">
+                                <button
+                                    onClick={handleExport}
+                                    className="w-full text-left px-3 py-2 text-sm hover:bg-slate-100 dark:hover:bg-slate-700 rounded flex items-center gap-2"
+                                >
+                                    <Download className="w-4 h-4" />
+                                    Export as PDF
+                                </button>
+
+                                <button
+                                    onClick={() => handleExportAsImages('png')}
+                                    className="w-full text-left px-3 py-2 text-sm hover:bg-slate-100 dark:hover:bg-slate-700 rounded flex items-center gap-2"
+                                >
+                                    <Download className="w-4 h-4" />
+                                    Export as PNG Images
+                                </button>
+
+                                <button
+                                    onClick={() => handleExportAsImages('jpg')}
+                                    className="w-full text-left px-3 py-2 text-sm hover:bg-slate-100 dark:hover:bg-slate-700 rounded flex items-center gap-2"
+                                >
+                                    <Download className="w-4 h-4" />
+                                    Export as JPG Images
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {showExportMenu && (
+                        <div
+                            className="fixed inset-0 z-40"
+                            onClick={() => setShowExportMenu(false)}
+                        />
+                    )}
+                </div>
                 <div className="w-px h-6 bg-slate-200 mx-2" />
                 <Button variant="ghost" size="icon" className="rounded-full w-8 h-8 bg-gradient-to-tr from-primary-500 to-primary-400 text-white">
                     <User className="w-4 h-4" />

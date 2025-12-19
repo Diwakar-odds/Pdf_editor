@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { MousePointer2, Type, Image as ImageIcon, PenTool, Highlighter, MessageSquare, Square, Circle, ArrowRight, Minus, Eraser } from 'lucide-react';
+import { MousePointer2, Type, Image as ImageIcon, PenTool, Highlighter, MessageSquare, Square, Circle, ArrowRight, Minus, Eraser, FileText, Shield } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { usePDFStore } from '../../store/usePDFStore';
 
@@ -26,6 +26,8 @@ export function ToolsSidebar({ activeTool, onSelectTool }: ToolsSidebarProps) {
         { id: 'arrow', icon: ArrowRight, label: 'Arrow' },
         { id: 'line', icon: Minus, label: 'Line' },
         { id: 'comment', icon: MessageSquare, label: 'Comment' },
+        { id: 'ocr', icon: FileText, label: 'OCR' },
+        { id: 'protect', icon: Shield, label: 'Protect' },
     ] as const;
 
     const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
